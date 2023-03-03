@@ -10,6 +10,7 @@ import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -69,7 +70,7 @@ public class EmployeeController {
      */
 
     @PostMapping("/logout")
-        public R<String> exit(HttpServletRequest req) {
+    public R<String> exit(HttpServletRequest req) {
 
         req.getSession().removeAttribute("employee");
 
@@ -77,8 +78,34 @@ public class EmployeeController {
     }
 
 
+    @PostMapping
+    public R<String> addEmployee(HttpServletRequest servletRequest, @RequestBody Employee employee) {
 
+        log.info("add employee:{}", employee.toString());
 
+//        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+//
+//        queryWrapper.eq(Employee::getUsername, employee.getUsername());
+//
+//        Employee emp = employeeService.getOne(queryWrapper);
+//
+//        if (emp != null) {
+//
+//            return R.error("Username already exist!");
+//        }
+
+        employee.setPassword(DigestUtils.md5DigestAsHex("350984".getBytes()));
+        employee.setCreateTime(LocalDateTime.now());
+        employee.setUpdateTime(LocalDateTime.now());
+        Long loginUser = (Long) servletRequest.getSession().getAttribute("employee");
+        employee.setCreateUser((loginUser));
+        employee.setUpdateUser(loginUser);
+
+        employeeService.save(employee);
+
+        return R.success("Create successful!");
+
+    }
 
 
 }
